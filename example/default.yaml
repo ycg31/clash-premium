@@ -1,0 +1,121 @@
+mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: warning # info / warning / error / debug / silent
+ipv6: false
+external-controller: 0.0.0.0:9090
+# external-ui: /ui
+
+# 支持的协议及加密算法 示例请查阅 Clash 项目 wiki 以使用最新格式
+# https://github.com/Dreamacro/clash/wiki/configuration
+proxies:
+  # - name: "vmess"
+  # type: vmess
+  # server: server
+  # port: 443
+  # ...
+
+# 服务器节点订阅 示例请查阅 Clash 项目 wiki 以使用最新格式
+# https://github.com/Dreamacro/clash/wiki/configuration#proxy-providers
+proxy-providers:
+  # 订阅转换 https://sub.dler.io/
+  # 模式设置: 进阶模式
+  # 订阅链接: 你的机场订阅地址
+  # 客户端: Clash
+  # 输出为 Node List
+  # 生成订阅链接
+  Subscription: #「节点订阅」
+    type: http
+    url: '此处填写转换后的订阅链接'
+    interval: 86400
+    path: ./Proxy/Subscription.yaml
+    health-check:
+      enable: false
+      interval: 600
+      url: http://www.gstatic.com/generate_204
+
+# 策略组 示例请查阅 Clash 项目 wiki 以使用最新格式
+# https://github.com/Dreamacro/clash/wiki/configuration#proxy-groupson
+proxy-groups:
+  - name: 'Proxies'
+    type: select
+    proxies:
+      - Url-Test
+      - External
+
+  - name: 'Url-Test'
+  type: url-test
+  use:
+    - Subscription # 「proxy-providers」-> Subscription
+  url: 'http://www.gstatic.com/generate_204'
+  interval: 300
+
+  - name: 'External'
+    type: select
+    use:
+      - Subscription # 「proxy-providers」-> Subscription
+
+  - name: 'Match'
+    type: select
+    proxies:
+      - Proxies
+      - DIRECT
+
+# 关于 Rule Provider 
+# https://lancellc.gitbook.io/clash/clash-config-file/rule-provider
+rule-providers:
+  Unbreak:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Unbreak.yaml
+    url: https://cdn.jsdelivr.net/gh/DivineEngine/Profiles@master/Clash/RuleSet/Unbreak.yaml
+    interval: 86400
+
+  Streaming:
+    type: http
+    behavior: classical
+    path: ./RuleSet/StreamingMedia/Streaming.yaml
+    url: https://cdn.jsdelivr.net/gh/DivineEngine/Profiles@master/Clash/RuleSet/StreamingMedia/Streaming.yaml
+    interval: 86400
+
+  Global:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Global.yaml
+    url: https://cdn.jsdelivr.net/gh/DivineEngine/Profiles@master/Clash/RuleSet/Global.yaml
+    interval: 86400
+
+  China:
+    type: http
+    behavior: classical
+    path: ./RuleSet/China.yaml
+    url: https://cdn.jsdelivr.net/gh/DivineEngine/Profiles@master/Clash/RuleSet/China.yaml
+    interval: 86400
+
+  Lan:
+    type: http
+    behavior: classical
+    path: ./RuleSet/Lan.yaml
+    url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@release/rule/Clash/Lan/Lan.yaml
+    interval: 86400
+
+# 规则 示例请查阅 Clash 项目 wiki 以使用最新格式
+# https://github.com/Dreamacro/clash/wiki/configuration#rules
+rules:
+  # Unbreak
+  - RULE-SET,Unbreak,DIRECT
+
+  # Global Area Network
+  - RULE-SET,Streaming,Proxies
+  - RULE-SET,Global,Proxies
+
+  # China Area Network
+  - RULE-SET,China,DIRECT
+
+  # Local Area Network
+  - RULE-SET,Lan,DIRECT
+
+  # GeoIP China
+  - GEOIP,CN,DIRECT
+
+  - MATCH,Match
