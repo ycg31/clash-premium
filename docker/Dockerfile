@@ -10,24 +10,23 @@ RUN wget -O yacd.zip 'https://github.com/haishanh/yacd/archive/gh-pages.zip' \
     && rm -rf /clash/ui/yacd-gh-pages
 
 
-FROM alpine:3.14
+FROM alpine:latest
 LABEL container.maintainer="xtoys <echoless@yeah.net>" \
-      container.sourceCode="https://github.com/Dreamacro/clash"
+      container.code.repo="https://github.com/Dreamacro/clash"
 
 ENV SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " \
     TZ=Asia/Shanghai \
-    WORKSPACE=/root/.config/clash
+    WORKSPACE=/clash
 
 COPY --from=dreamacro/clash-premium:latest /clash /usr/bin/clash
-COPY --from=builder /clash /root/.config/clash
+COPY --from=builder /clash /clash
 COPY s6-overlay /
 
 RUN apk update -f \
     && apk --no-cache add -f \
        bash \
        tzdata \
-       iptables \
        s6-overlay \
        ca-certificates \
     && rm -rf /var/cache/apk/* \

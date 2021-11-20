@@ -2,4 +2,4 @@
 
 echo "[services.d] clash: service is running..."
 
-exec s6-setuidgid root clash -d $WORKSPACE -ext-ui $WORKSPACE/ui -ext-ctl 0.0.0.0:9090
+exec s6-setuidgid root clash -d $WORKSPACE -ext-ui $WORKSPACE/ui
