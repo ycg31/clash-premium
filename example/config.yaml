@@ -85,7 +85,6 @@ proxy-providers:
       interval: 600
       url: http://www.gstatic.com/generate_204
 
-
 # 策略组 示例请查阅 Clash 项目 wiki 以使用最新格式
 # https://github.com/Dreamacro/clash/wiki/configuration#proxy-groupson
 proxy-groups:
@@ -96,11 +95,11 @@ proxy-groups:
       - External
 
   - name: 'Url-Test'
-  type: url-test
-  use:
-    - Subscription # 「proxy-providers」-> Subscription
-  url: 'http://www.gstatic.com/generate_204'
-  interval: 300
+    type: url-test
+    use:
+      - Subscription # 「proxy-providers」-> Subscription
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
 
   - name: 'External'
     type: select
