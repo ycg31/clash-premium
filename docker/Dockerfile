@@ -10,7 +10,7 @@ RUN wget -O yacd.zip 'https://github.com/haishanh/yacd/archive/gh-pages.zip' \
     && rm -rf /clash/ui/yacd-gh-pages
 
 
-FROM alpine:latest
+FROM alpine:3.14
 LABEL container.maintainer="xtoys <echoless@yeah.net>" \
       container.code.repo="https://github.com/Dreamacro/clash"
 
