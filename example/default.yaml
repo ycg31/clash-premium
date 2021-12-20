@@ -44,11 +44,11 @@ proxy-groups:
       - External
 
   - name: 'Url-Test'
-  type: url-test
-  use:
-    - Subscription # 「proxy-providers」-> Subscription
-  url: 'http://www.gstatic.com/generate_204'
-  interval: 300
+    type: url-test
+    use:
+      - Subscription # 「proxy-providers」-> Subscription
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
 
   - name: 'External'
     type: select
@@ -61,7 +61,7 @@ proxy-groups:
       - Proxies
       - DIRECT
 
-# 关于 Rule Provider 
+# 关于 Rule Provider
 # https://lancellc.gitbook.io/clash/clash-config-file/rule-provider
 rule-providers:
   Unbreak:
