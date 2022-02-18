@@ -12,8 +12,8 @@ on:
         description: 'DockerImage Name'
         required: true
         default: 'clash'
-      tag:
-        description: 'DockerImage TagName'
+      core:
+        description: 'PremiumCore Version'
         required: true
         default: 'premium'
       platform:
@@ -54,6 +54,8 @@ jobs:
           context: docker
           platforms: ${{ github.event.inputs.platform }}
           push: true
+          build-args: |
+            CLASH_PREMIUM_VERSION=${{ github.event.inputs.core }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:${{ github.event.inputs.tag }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:${{ github.event.inputs.core }}
             ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:latest
