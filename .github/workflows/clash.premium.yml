@@ -15,7 +15,7 @@ on:
       core:
         description: 'PremiumCore Version'
         required: true
-        default: 'premium'
+        default: ''
       platform:
         description: 'DockerImage Platform'
         required: true
