@@ -1,37 +1,34 @@
 FROM alpine:latest AS builder
-RUN apk add --no-cache git wget
-    # geoip-db
-ADD https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb  /clash/Country.mmdb
-    # yacd-ui
-RUN wget -O yacd.zip 'https://github.com/haishanh/yacd/archive/gh-pages.zip' \
-    && mkdir /clash/ui \
-    && unzip yacd.zip -d /clash/ui \
-    && mv /clash/ui/yacd-gh-pages/* /clash/ui \
-    && rm -rf /clash/ui/yacd-gh-pages
+ARG CLASH_PREMIUM_VERSION
+WORKDIR /out
+COPY s6-overlay .
+RUN chmod -R +x /out/etc
+RUN apk add --update --no-cache curl gzip \
+    && baseArch=$(cat /etc/apk/arch | sed "{s/x86_64/amd64/; s/aarch64/armv8/}") \
+    && curl -sSL https://github.com/Dreamacro/clash/releases/download/premium/clash-linux-${baseArch}-${CLASH_PREMIUM_VERSION}.gz -o clash.gz \
+    && curl -sSL https://github.com/haishanh/yacd/releases/latest/download/yacd.tar.xz -o yacd.tar.xz \
+    && curl -sSL https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb -o Country.mmdb
+RUN gzip -d clash.gz && chmod 777 clash
+RUN tar -xvJf yacd.tar.xz
 
 
 FROM alpine:3.14
-LABEL container.maintainer="xtoys <echoless@yeah.net>" \
-      container.code.repo="https://github.com/Dreamacro/clash"
-
+LABEL container.maintainer="xtoys <echoless@yeah.net>"
 ENV SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " \
     TZ=Asia/Shanghai \
     WORKSPACE=/clash
 
-COPY --from=dreamacro/clash-premium:latest /clash /usr/bin/clash
-COPY --from=builder /clash /clash
-COPY s6-overlay /
+COPY --from=builder /out/clash /usr/bin/clash
+COPY --from=builder /out/public /clash/ui
+COPY --from=builder /out/Country.mmdb /clash/Country.mmdb
+COPY --from=builder /out/etc /etc
 
-RUN apk update -f \
-    && apk --no-cache add -f \
+RUN apk add --update --no-cache \
        bash \
        tzdata \
        s6-overlay \
-       ca-certificates \
-    && rm -rf /var/cache/apk/* \
-    && chmod -R +x /etc/cont-init.d \
-    && chmod -R +x /etc/services.d
+       ca-certificates
 
 WORKDIR $WORKSPACE
 ENTRYPOINT ["/init"]
