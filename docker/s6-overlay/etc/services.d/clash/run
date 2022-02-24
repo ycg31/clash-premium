@@ -1,5 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-echo "[services.d] clash: service is running..."
-
-exec s6-setuidgid root clash -d $WORKSPACE -ext-ui $WORKSPACE/ui
