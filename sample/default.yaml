@@ -2,7 +2,7 @@ mixed-port: 7890
 allow-lan: true
 mode: rule
 log-level: warning # info / warning / error / debug / silent
-ipv6: false
+ipv6: true
 external-controller: 0.0.0.0:9090
 # external-ui: /ui
 
