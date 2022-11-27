@@ -47,8 +47,8 @@ function initApp() {
   echo "[init] executing container initialization scripts..."
   if [ $ENHANCED_MODE ]; then
       echo "[init] mode: enable transparent proxies mode."
-      addIptables
       enableIpv4Forward
+      addIptables
       setIptables
   else
       echo "[init] mode: enable http proxies mode."

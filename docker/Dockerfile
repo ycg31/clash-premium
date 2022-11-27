@@ -3,8 +3,9 @@ ARG CLASH_PREMIUM_VERSION
 WORKDIR /out
 COPY docker-entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
-RUN apk add --update --no-cache curl gzip \
-    && baseArch=$(cat /etc/apk/arch | sed "{s/x86_64/amd64/; s/aarch64/armv8/}") \
+RUN set -e \
+    && apk add --update --no-cache curl gzip \
+    && baseArch=$(cat /etc/apk/arch | sed "{s/x86_64/amd64/; s/aarch64/arm64/}") \
     && curl -sSL https://github.com/Dreamacro/clash/releases/download/premium/clash-linux-${baseArch}-${CLASH_PREMIUM_VERSION}.gz -o clash.gz \
     && curl -sSL https://github.com/haishanh/yacd/releases/latest/download/yacd.tar.xz -o yacd.tar.xz \
     && curl -sSL https://github.com/Dreamacro/maxmind-geoip/releases/latest/download/Country.mmdb -o Country.mmdb
@@ -21,7 +22,7 @@ ENV SHELL=/bin/bash \
 COPY --from=builder /out/clash /usr/bin/clash
 COPY --from=builder /out/public /clash/ui
 COPY --from=builder /out/Country.mmdb /clash/Country.mmdb
-COPY --from=builder /out/entrypoint.sh /usr/bin/
+COPY --from=builder /out/entrypoint.sh /usr/bin/entrypoint.sh
 
 RUN apk add --update --no-cache \
        bash \
