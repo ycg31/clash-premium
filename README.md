@@ -1,16 +1,13 @@
-<p align="right">
-    <a href="https://github.com/xtoys/clash/wiki">Wiki</a>
-</p>
-
 &nbsp;
 
-&nbsp;
-
-<p align="center">
-  <img src="./assets/clash.png" width="25%" alt="clash" />
-</p>
-<p align="center">
-   <b>A rule-based tunnel in Go.</b>&nbsp;
-</p>
+<div align="center">
+  <img src="./assets/clash.png" width="35%" alt="clash" />
+  <p>
+    <b>A rule-based tunnel in Go.</b>
+  </p>
+  <p>
+    <a href="https://github.com/xtoys/clash/wiki">USAGE</a> · <a href="https://github.com/Dreamacro/clash/releases/tag/premium">CHANGELOG</a>
+  </p>
+</div>
 
 &nbsp;
