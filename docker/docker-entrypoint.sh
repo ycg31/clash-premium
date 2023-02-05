@@ -1,22 +1,25 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 
-function enableIpv4Forward(){
-  echo "enable ipv4 ip forwarding..."
-  sysctl -w net.ipv4.ip_forward=1
-}
+set -e
 
 function addIptables(){
   if ! [ -x "$(command -v iptables)" ]; then
-    echo "installing iptables..."
-    apk update -f && apk add -q iptables
-    rm -rf /var/cache/apk/*
+    echo "[init] package: installing iptables..."
+    apk add --update --no-cache -q iptables
+    echo "[init] package: done."
   else
-    echo 'iptables has been installed'
+    echo '[init] package: iptables has been installed.'
   fi
 }
 
+function enableIpv4Forward(){
+  echo "[init] setting: enable ipv4 ip forwarding..."
+  sysctl -w net.ipv4.ip_forward=1
+  echo "[init] setting: done."
+}
+
 function setIptables(){
-  echo "adding iptables rules..."
+  echo "[init] iptables: adding iptables rules..."
   # ROUTE RULES
   ip rule add fwmark 1 table 100
   ip route add local 0.0.0.0/0 dev lo table 100
@@ -36,18 +39,24 @@ function setIptables(){
   iptables -t mangle -A clash -p tcp -j TPROXY --on-port 7893 --tproxy-mark 1
   # REDIRECT
   iptables -t mangle -A PREROUTING -j clash
+  echo "[init] iptables: done."
 }
 
-function initEnv() {
-  echo "........................................"
+function initApp() {
+  echo "====================== clash.service ========================"
+  echo "[init] executing container initialization scripts..."
   if [ $ENHANCED_MODE ]; then
+      echo "[init] mode: enable transparent proxies mode."
       enableIpv4Forward
       addIptables
       setIptables
   else
-      echo "Good luck & Have fun !"
+      echo "[init] mode: enable http proxies mode."
   fi
-  echo "........................................"
+  echo "[init] container initialization scripts completed."
+  echo "[service] clash: service started, have fun"
 }
 
-initEnv 2>&1 | sed "s#^#[cont-init.d] $(basename $0): \1#g"
+initApp
+
+exec clash -d /clash -ext-ui /clash/ui "$@"

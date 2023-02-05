@@ -1,59 +1,58 @@
-# https://github.com/xtoys
+# https://github.com/uxber
 #
 # Description: Build DockerImages using GitHub Actions
 #
+# {{github.repository}} as <account>/<repo>
 
 name: Clash Premium
 
 on:
-  workflow_dispatch:
-    inputs:
-      img:
-        description: 'DockerImage Name'
-        required: true
-        default: 'clash'
-      tag:
-        description: 'DockerImage TagName'
-        required: true
-        default: 'premium'
-      platform:
-        description: 'DockerImage Platform'
-        required: true
-        default: 'linux/arm64,linux/amd64'
+  push:
+    tags:
+      - '*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Docker Build
+    name: Docker Buildx
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Initialization environment
+        id: init
+        run: |
+          echo "image_name=${{ github.repository }}" >> $GITHUB_OUTPUT 
+          echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+          echo "platform=linux/arm64,linux/amd64" >> $GITHUB_OUTPUT
 
-      - name: Setup QEMU Simulator
-        id: qemu
-        uses: docker/setup-qemu-action@v1
-        with:
-          image: tonistiigi/binfmt:latest
-          platforms: all
+      - name: Checkout Repository
+        uses: actions/checkout@main
 
-      - name: Setup Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
+      - name: Set up QEMU Simulator
+        uses: docker/setup-qemu-action@master
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@master
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Publish image
-        id: docker_build
-        uses: docker/build-push-action@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@master
         with:
-          context: docker
-          platforms: ${{ github.event.inputs.platform }}
+          images: ${{ steps.init.outputs.image_name }}
+          tags: type=ref,event=tag
+
+      - name: Build and Publish image
+        uses: docker/build-push-action@master
+        with:
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:${{ github.event.inputs.tag }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:latest
+          context: docker
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ steps.init.outputs.platform }}
+          build-args: |
+            CLASH_PREMIUM_VERSION=${{ steps.init.outputs.version }}
