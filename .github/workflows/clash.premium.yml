@@ -2,18 +2,14 @@
 #
 # Description: Build DockerImages using GitHub Actions
 #
+# {{github.repository}} as <account>/<repo>
 
 name: Clash Premium
 
 on:
   push:
     tags:
-      - "*"
-
-env:
-    # github.repository as <account>/<repo>
-    IMAGE_NAME: ${{ github.repository }}
-    IMAGE_PLATFORM: 'linux/arm64,linux/amd64'
+      - '*'
 
 jobs:
   build:
@@ -21,6 +17,13 @@ jobs:
     name: Docker Buildx
 
     steps:
+      - name: Initialization environment
+        id: init
+        run: |
+          echo "image_name=${{ github.repository }}" >> $GITHUB_OUTPUT 
+          echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+          echo "platform=linux/arm64,linux/amd64" >> $GITHUB_OUTPUT
+
       - name: Checkout Repository
         uses: actions/checkout@main
 
@@ -40,21 +43,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@master
         with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=tag
-
-      - name: Premium version
-        id: tag
-        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+          images: ${{ steps.init.outputs.image_name }}
+          tags: type=ref,event=tag
 
       - name: Build and Publish image
         uses: docker/build-push-action@master
         with:
-          context: docker
-          platforms: ${{ env.IMAGE_PLATFORM }}
           push: true
+          context: docker
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ steps.init.outputs.platform }}
           build-args: |
-            CLASH_PREMIUM_VERSION=${{ steps.tag.outputs.version }}
+            CLASH_PREMIUM_VERSION=${{ steps.init.outputs.version }}
