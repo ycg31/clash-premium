@@ -1,4 +1,4 @@
-# https://github.com/xtoys
+# https://github.com/uxber
 #
 # Description: Build DockerImages using GitHub Actions
 #
@@ -6,58 +6,55 @@
 name: Clash Premium
 
 on:
-  workflow_dispatch:
-    inputs:
-      img:
-        description: 'DockerImage Name'
-        required: true
-        default: 'clash'
-      core:
-        description: 'PremiumCore Version'
-        required: true
-        default: ''
-      platform:
-        description: 'DockerImage Platform'
-        required: true
-        default: 'linux/arm64,linux/amd64'
-        type: choice
-        options:
-          - 'linux/arm64,linux/amd64'
-          - 'linux/arm64'
-          - 'linux/amd64'
+  push:
+    tags:
+      - "*"
+
+env:
+    # github.repository as <account>/<repo>
+    IMAGE_NAME: ${{ github.repository }}
+    IMAGE_PLATFORM: 'linux/arm64,linux/amd64'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Docker Build
+    name: Docker Buildx
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@main
 
-      - name: Setup QEMU Simulator
-        uses: docker/setup-qemu-action@v2
-        with:
-          image: tonistiigi/binfmt:latest
-          platforms: all
+      - name: Set up QEMU Simulator
+        uses: docker/setup-qemu-action@master
 
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
 
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@master
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@master
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+
+      - name: Premium version
+        id: tag
+        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
       - name: Build and Publish image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@master
         with:
           context: docker
-          platforms: ${{ github.event.inputs.platform }}
+          platforms: ${{ env.IMAGE_PLATFORM }}
           push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            CLASH_PREMIUM_VERSION=${{ github.event.inputs.core }}
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:${{ github.event.inputs.core }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.img }}:latest
+            CLASH_PREMIUM_VERSION=${{ steps.tag.outputs.version }}

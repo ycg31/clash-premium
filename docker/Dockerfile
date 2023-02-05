@@ -14,7 +14,6 @@ RUN tar -xvJf yacd.tar.xz
 
 
 FROM alpine:latest
-LABEL container.maintainer="xtoys <echoless@yeah.net>"
 ENV SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " \
     TZ=Asia/Shanghai
